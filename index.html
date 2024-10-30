@@ -22,6 +22,7 @@
         </style>
 
         <script src="babylon.js"></script>
+        <script src="papaparse.min.js"></script>
 
     </head>
 
@@ -29,9 +30,12 @@
 
 	<canvas id="renderCanvas"></canvas>
 
-	<script>
+	<script type="module">
+
+        
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
         var createScene = function() {
             var scene = new BABYLON.Scene(engine);
             scene.clearColor = BABYLON.Color3.Black;
@@ -109,8 +113,16 @@
 
             return scene;
         };
-
-
+        var points = {};
+        Papa.parse("https://github.com/mads-reher/BabylonPointCloud/blob/master/points.csv",
+            {
+                download: true,
+                dynamicTyping: true,
+                complete : function(results){
+                    points = results.data;
+                    console.log(points)
+                }
+            })
         const scene = createScene(); //Call the createScene function
 
         // Register a render loop to repeatedly render the scene
