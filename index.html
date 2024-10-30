@@ -35,7 +35,32 @@
         
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+        var points = {};
+        var pointsLoaded = false;
+        Papa.parse("https://mads-reher.github.io/BabylonPointCloud/points.csv",
+            {
+                download: true,
+                dynamicTyping: true,
+                complete : function(results){
+                    points = results.data;
+                    pointsLoaded = true;
+                    for (var p = 0; p < 10000; p=p+6) {
+                        //console.log(points[0][p]);
+                    }
+                    console.log(points)
+                    const scene = createScene(); //Call the createScene function
 
+                    // Register a render loop to repeatedly render the scene
+                    engine.runRenderLoop(function () {
+                        scene.render();
+                    });
+
+                    // Watch for browser/canvas resize events
+                    window.addEventListener("resize", function () {
+                        engine.resize();
+                    });
+                }
+            })
         var createScene = function() {
             var scene = new BABYLON.Scene(engine);
             scene.clearColor = BABYLON.Color3.Black;
@@ -63,7 +88,19 @@
                 particle.rotation.y = Math.random() * 3.15;
                 particle.rotation.z = Math.random() * 1.5;
                 particle.color = new BABYLON.Color4(particle.position.x / fact + 0.5, particle.position.y / fact + 0.5, particle.position.z / fact + 0.5, 1.0);
+                console.log(particle)
             };
+            var arrayPositionsFunction = function(particle,p){
+                var position = p*6;
+                particle.position.x = points[0][position];
+                particle.position.y = points[0][position+1];
+                particle.position.z = points[0][position+2];
+                particle.rotation.x = 1;
+                particle.rotation.y = 1;
+                particle.rotation.z = 1;
+                particle.color = new BABYLON.Color4(position+3, position+4, position+5, 1.0);
+
+            }
 
             // model
             var model = BABYLON.MeshBuilder.CreatePolyhedron("m", {}, scene);
@@ -79,6 +116,10 @@
             SPS.initParticles = function () {
                 for (var p = 0; p < SPS.nbParticles; p++) {
                     myPositionFunction(SPS.particles[p]);
+                    if(pointsLoaded){
+                        //arrayPositionsFunction(SPS.particles[p],p);
+                    }
+
                 }
             }
 
@@ -105,35 +146,11 @@
                 SPS.setParticles();
             };
 
-            // SPS mesh animation
-            scene.registerBeforeRender(function() {
-                pl.position = camera.position;
-                SPS.mesh.rotation.y += 0.001;
-            });
 
             return scene;
         };
-        var points = {};
-        Papa.parse("https://mads-reher.github.io/BabylonPointCloud/points.csv",
-            {
-                download: true,
-                dynamicTyping: true,
-                complete : function(results){
-                    points = results.data;
-                    console.log(points)
-                }
-            })
-        const scene = createScene(); //Call the createScene function
 
-        // Register a render loop to repeatedly render the scene
-        engine.runRenderLoop(function () {
-                scene.render();
-        });
 
-        // Watch for browser/canvas resize events
-        window.addEventListener("resize", function () {
-                engine.resize();
-        });
 	</script>
 
    </body>
